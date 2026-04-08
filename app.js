@@ -28,7 +28,7 @@ app.use(async (req, res, next) => {
 
 // CORS configuration
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175","https://soil-management-panel-xllp.vercel.app/"],
+  origin: process.env.CLIENT_URL || ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175","https://soil-management-panel-xllp.vercel.app/login"],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
