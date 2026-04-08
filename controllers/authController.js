@@ -114,10 +114,33 @@ export const logout = async (req, res) => {
   });
 };
 
-// @desc    Update current user profile
-// @route   PUT /api/auth/profile
-// @access  Private
-export const updateProfile = async (req, res) => {
+// @desc    Create superadmin
+// @route   POST /api/auth/create-superadmin
+// @access  Secret key protected
+export const createSuperAdmin = async (req, res) => {
+  try {
+    const { name, phone, password, secretKey } = req.body;
+
+    if (secretKey !== process.env.SUPERADMIN_SECRET) {
+      return res.status(403).json({ success: false, message: 'Invalid secret key' });
+    }
+
+    if (!name || !phone || !password) {
+      return res.status(400).json({ success: false, message: 'name, phone aur password required hain' });
+    }
+
+    const existing = await User.findOne({ phone });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Is phone number se user already exists' });
+    }
+
+    const user = await User.create({ name, phone, password, role: 'superadmin', email: `${phone}@superadmin.com` });
+
+    res.status(201).json({ success: true, message: 'Superadmin created successfully', data: { name: user.name, phone: user.phone, role: user.role } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
   try {
     const user = await User.findById(req.user.id);
 
