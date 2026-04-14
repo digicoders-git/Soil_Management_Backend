@@ -4,24 +4,25 @@ const machineMovementSchema = new mongoose.Schema({
   machineUnitId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'MachineUnit',
-    required: true
+    required: false,
+    default: null
   },
   fromLocationType: {
     type: String,
     enum: ['store', 'site', 'repair', 'supervisor'],
-    required: true
+    required: false
   },
   fromLocationId: {
-    type: mongoose.Schema.Types.ObjectId, // siteId or null for store/repair
+    type: mongoose.Schema.Types.ObjectId,
     default: null
   },
   toLocationType: {
     type: String,
     enum: ['store', 'site', 'repair', 'supervisor'],
-    required: true
+    required: false
   },
   toLocationId: {
-    type: mongoose.Schema.Types.ObjectId, // siteId or null for store/repair
+    type: mongoose.Schema.Types.ObjectId,
     default: null
   },
   status: {

@@ -160,14 +160,12 @@ export const completeMovement = async (req, res) => {
 export const saveExitChallan = async (req, res) => {
   try {
     const { siteId, supervisorId, machines, challanNo } = req.body;
-    // machines: [{ machineUnitId, machineTypeName, serialNumber, status: 'returned'|'missing', remark }]
+
+    if (!machines || machines.length === 0) {
+      return res.status(400).json({ success: false, message: 'No machines provided' });
+    }
 
     const record = await MachineMovement.create({
-      machineUnitId: machines[0]?.machineUnitId || machines[0]?.machineUnitId,
-      fromLocationType: 'site',
-      fromLocationId: siteId || null,
-      toLocationType: 'store',
-      status: 'completed',
       requestedBy: req.user.id,
       approvedBy: req.user.id,
       movementDate: new Date(),
@@ -193,7 +191,7 @@ export const saveExitChallan = async (req, res) => {
 export const getExitChallans = async (req, res) => {
   try {
     const { siteId, supervisorId } = req.query;
-    const query = { 'exitChallan.generatedAt': { $ne: null } };
+    const query = { 'exitChallan.challanNo': { $exists: true, $ne: null } };
     if (siteId) query['exitChallan.siteId'] = siteId;
     if (supervisorId) query['exitChallan.supervisorId'] = supervisorId;
 

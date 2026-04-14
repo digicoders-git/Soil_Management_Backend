@@ -9,16 +9,18 @@ export const getDailyUpdates = async (req, res) => {
         const { siteId } = req.query;
         let query = {};
 
-        // Filter based on user role
         if (req.user.role === 'admin') {
-            const sites = await Site.find({ adminId: req.user.id }).select('_id');
-            const siteIds = sites.map(s => s._id);
-            query.siteId = { $in: [siteId, ...siteIds].filter(id => id) };
-            if (siteId && !siteIds.map(id => id.toString()).includes(siteId)) {
-                return res.status(403).json({ success: false, message: 'Not authorized for this site' });
+            if (siteId) {
+                query.siteId = siteId;
+            } else {
+                const sites = await Site.find({ adminId: req.user.id }).select('_id');
+                query.siteId = { $in: sites.map(s => s._id) };
             }
         } else if (req.user.role === 'user') {
             query.userId = req.user.id;
+            if (siteId) query.siteId = siteId;
+        } else if (req.user.role === 'superadmin') {
+            if (siteId) query.siteId = siteId;
         }
 
         const updates = await DailyUpdate.find(query)
