@@ -7,9 +7,9 @@ export const getUsers = async (req, res) => {
   try {
     let query = {};
 
-    // If admin, only show their supervisors
+    // All admins see all supervisors
     if (req.user.role === 'admin') {
-      query = { adminId: req.user.id, role: 'user' };
+      query = { role: 'user' };
     }
 
     // If superadmin, show all users

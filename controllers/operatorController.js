@@ -2,7 +2,7 @@ import Operator from '../models/Operator.js';
 
 export const getOperators = async (req, res) => {
     try {
-        const query = req.user.role === 'admin' ? { adminId: req.user._id } : {};
+        const query = {};
         const operators = await Operator.find(query).populate('adminId', 'name').sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: operators });
     } catch (error) {
