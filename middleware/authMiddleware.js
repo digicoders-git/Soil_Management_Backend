@@ -3,6 +3,11 @@ import User from '../models/User.js';
 
 export const protect = async (req, res, next) => {
   try {
+    // Skip auth for OPTIONS requests (CORS preflight)
+    if (req.method === 'OPTIONS') {
+      return next();
+    }
+    
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
