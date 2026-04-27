@@ -57,9 +57,7 @@ app.options('*', cors());
 
 // Security middleware
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-  crossOriginOpenerPolicy: { policy: 'cross-origin' },
-  crossOriginEmbedderPolicy: false
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
 // Additional CORS headers middleware (fallback)
