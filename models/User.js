@@ -42,8 +42,14 @@ const userSchema = new mongoose.Schema({
     default: true
   },
   permissions: {
-    type: [String],
-    default: []
+    type: Map,
+    of: {
+      add: { type: Boolean, default: false },
+      view: { type: Boolean, default: false },
+      edit: { type: Boolean, default: false },
+      delete: { type: Boolean, default: false }
+    },
+    default: {}
   }
 }, {
   timestamps: true

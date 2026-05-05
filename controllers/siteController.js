@@ -1,4 +1,6 @@
 import Site from '../models/Site.js';
+import User from '../models/User.js';
+import OperatorAssignment from '../models/OperatorAssignment.js';
 
 // @desc    Get all sites
 // @route   GET /api/sites
@@ -9,7 +11,12 @@ export const getSites = async (req, res) => {
 
     // Filter based on user role
     if (req.user.role === 'admin') {
-      query.adminId = req.user.id;
+      const superAdmins = await User.find({ role: 'superadmin' }).select('_id');
+      const superAdminIds = superAdmins.map(sa => sa._id);
+      query.$or = [
+        { adminId: req.user.id },
+        { adminId: { $in: superAdminIds } }
+      ];
     } else if (req.user.role === 'user') {
       query.userId = { $in: [req.user.id] };
     }
@@ -19,10 +26,19 @@ export const getSites = async (req, res) => {
       .populate('userId', 'name email phone')
       .sort({ createdAt: -1 });
 
+    const sitesWithOperators = await Promise.all(sites.map(async (site) => {
+      const assignments = await OperatorAssignment.find({ siteId: site._id }).populate('operatorId', 'name');
+      const operators = [...new Set(assignments.map(a => a.operatorId?.name).filter(Boolean))];
+      return {
+        ...site.toObject(),
+        operators: operators.join(', ')
+      };
+    }));
+
     res.status(200).json({
       success: true,
-      count: sites.length,
-      data: sites
+      count: sitesWithOperators.length,
+      data: sitesWithOperators
     });
   } catch (error) {
     res.status(500).json({
