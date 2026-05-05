@@ -6,6 +6,11 @@ import { upload } from '../config/multer.js';
 
 const router = express.Router();
 
+// Allow OPTIONS requests to bypass auth for CORS preflight
+router.options('*', (req, res) => {
+  res.sendStatus(200);
+});
+
 router.use(authMiddleware);
 
 router
