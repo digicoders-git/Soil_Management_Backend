@@ -8,7 +8,7 @@ import {
   getInstallmentSummary
 } from '../controllers/installmentController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
-import { roleMiddleware } from '../middleware/roleMiddleware.js';
+import { roleMiddleware, checkPermission } from '../middleware/roleMiddleware.js';
 
 const router = express.Router();
 
@@ -17,8 +17,8 @@ router.use(authMiddleware);
 
 router
   .route('/')
-  .get(getInstallments)
-  .post(roleMiddleware('superadmin', 'admin'), createInstallment);
+  .get(checkPermission('installment', 'view'), getInstallments)
+  .post(checkPermission('installment', 'add'), createInstallment);
 
 router
   .route('/summary/:siteId')
@@ -26,8 +26,8 @@ router
 
 router
   .route('/:id')
-  .get(getInstallment)
-  .put(roleMiddleware('superadmin', 'admin'), updateInstallment)
-  .delete(roleMiddleware('superadmin', 'admin'), deleteInstallment);
+  .get(checkPermission('installment', 'view'), getInstallment)
+  .put(checkPermission('installment', 'edit'), updateInstallment)
+  .delete(checkPermission('installment', 'delete'), deleteInstallment);
 
 export default router;

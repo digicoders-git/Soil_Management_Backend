@@ -8,6 +8,7 @@ import {
   getExpenseSummary
 } from '../controllers/expenseController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { checkPermission } from '../middleware/roleMiddleware.js';
 
 const router = express.Router();
 
@@ -16,8 +17,8 @@ router.use(authMiddleware);
 
 router
   .route('/')
-  .get(getExpenses)
-  .post(createExpense);
+  .get(checkPermission('expenses', 'view'), getExpenses)
+  .post(checkPermission('expenses', 'add'), createExpense);
 
 router
   .route('/summary/:siteId')
@@ -25,8 +26,8 @@ router
 
 router
   .route('/:id')
-  .get(getExpense)
-  .put(updateExpense)
-  .delete(deleteExpense);
+  .get(checkPermission('expenses', 'view'), getExpense)
+  .put(checkPermission('expenses', 'edit'), updateExpense)
+  .delete(checkPermission('expenses', 'delete'), deleteExpense);
 
 export default router;

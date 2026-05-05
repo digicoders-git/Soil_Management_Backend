@@ -10,13 +10,17 @@ export const getSites = async (req, res) => {
     let query = {};
 
     // Filter based on user role
-    if (req.user.role === 'admin') {
-      const superAdmins = await User.find({ role: 'superadmin' }).select('_id');
-      const superAdminIds = superAdmins.map(sa => sa._id);
-      query.$or = [
-        { adminId: req.user.id },
-        { adminId: { $in: superAdminIds } }
-      ];
+    if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+      if (req.query.userId) {
+        query.userId = { $in: [req.query.userId] };
+      } else if (req.user.role === 'admin') {
+        const superAdmins = await User.find({ role: 'superadmin' }).select('_id');
+        const superAdminIds = superAdmins.map(sa => sa._id);
+        query.$or = [
+          { adminId: req.user.id },
+          { adminId: { $in: superAdminIds } }
+        ];
+      }
     } else if (req.user.role === 'user') {
       query.userId = { $in: [req.user.id] };
     }

@@ -1,7 +1,7 @@
 import express from 'express';
 import { getMachineUnits, createMachineUnit, getAvailableUnits, getUnitsBySite, getUnitsByIncharge, updateMachineUnit, deleteMachineUnit, purchaseMachineUnit } from '../controllers/machineUnitController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
-import { roleMiddleware } from '../middleware/roleMiddleware.js';
+import { roleMiddleware, checkPermission } from '../middleware/roleMiddleware.js';
 import { upload } from '../config/multer.js';
 
 const router = express.Router();
@@ -15,10 +15,10 @@ router.use(authMiddleware);
 
 router
     .route('/')
-    .get(getMachineUnits)
-    .post(roleMiddleware('superadmin', 'admin'), upload.single('amcDocument'), createMachineUnit);
+    .get(checkPermission('all_stock', 'view'), getMachineUnits)
+    .post(checkPermission('stock_units', 'add'), upload.single('amcDocument'), createMachineUnit);
 
-router.post('/purchase', purchaseMachineUnit);
+router.post('/purchase', checkPermission('stock_units', 'add'), purchaseMachineUnit);
 router.get('/available', getAvailableUnits);
 router.get('/site/:siteId', getUnitsBySite);
 router.get('/incharge/:userId', getUnitsByIncharge);
@@ -67,7 +67,7 @@ router.patch('/:id/operator', roleMiddleware('superadmin', 'admin', 'user'), asy
 
 router
     .route('/:id')
-    .put(roleMiddleware('superadmin', 'admin'), upload.single('amcDocument'), updateMachineUnit)
-    .delete(roleMiddleware('superadmin', 'admin'), deleteMachineUnit);
+    .put(checkPermission('all_stock', 'edit'), upload.single('amcDocument'), updateMachineUnit)
+    .delete(checkPermission('all_stock', 'delete'), deleteMachineUnit);
 
 export default router;
