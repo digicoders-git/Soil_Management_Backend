@@ -27,13 +27,12 @@ export const checkPermission = (module, action) => {
       });
     }
 
-    if (req.user.role === 'superadmin') {
+    if (req.user.role === 'superadmin' || req.user.role === 'admin') {
       return next();
     }
 
-    if (req.user.role === 'admin') {
+    if (req.user.role === 'user') {
       const permissions = req.user.permissions;
-      // Mongoose Map uses .get() or plain object access depending on how it's populated/retrieved
       const modulePerms = permissions instanceof Map ? permissions.get(module) : permissions?.[module];
       
       if (modulePerms && modulePerms[action]) {
