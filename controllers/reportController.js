@@ -23,15 +23,17 @@ export const getMachineReports = async (req, res) => {
     }
 
     // Filter based on user role
-    if (req.user.role === 'admin') {
-      const sites = await Site.find({ adminId: req.user.id }).select('_id');
-      const siteIds = sites.map(s => s._id);
-      query.siteId = { $in: [siteId, ...siteIds].filter(id => id) };
-      if (siteId && !siteIds.map(id => id.toString()).includes(siteId)) {
+    if (req.user.role === 'superadmin') {
+      // superadmin can access all reports, no filter needed
+    } else if (req.user.role === 'admin') {
+      const sites = await Site.find({ adminId: req.user._id }).select('_id');
+      const siteIds = sites.map(s => s._id.toString());
+      if (siteId && !siteIds.includes(siteId)) {
         return res.status(403).json({ success: false, message: 'Not authorized for this site' });
       }
+      if (!siteId) query.siteId = { $in: sites.map(s => s._id) };
     } else if (req.user.role === 'user') {
-      query.reportedBy = req.user.id;
+      query.reportedBy = req.user._id;
     }
 
     const reports = await MachineReport.find(query)
