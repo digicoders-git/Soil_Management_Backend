@@ -13,11 +13,11 @@ export const getDailyUpdates = async (req, res) => {
             if (siteId) {
                 query.siteId = siteId;
             } else {
-                const sites = await Site.find({ adminId: req.user.id }).select('_id');
+                const sites = await Site.find({ adminId: req.user._id }).select('_id');
                 query.siteId = { $in: sites.map(s => s._id) };
             }
         } else if (req.user.role === 'user') {
-            query.userId = req.user.id;
+            query.userId = req.user._id;
             if (siteId) query.siteId = siteId;
         } else if (req.user.role === 'superadmin') {
             if (siteId) query.siteId = siteId;

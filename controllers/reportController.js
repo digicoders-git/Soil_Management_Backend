@@ -64,7 +64,7 @@ export const getMachineReports = async (req, res) => {
 export const getMachineReport = async (req, res) => {
   try {
     const report = await MachineReport.findById(req.params.id)
-      .populate('siteId', 'name address')
+      .populate('siteId', 'name address') 
       .populate({
         path: 'machineUnitId',
         populate: { path: 'machineTypeId' }

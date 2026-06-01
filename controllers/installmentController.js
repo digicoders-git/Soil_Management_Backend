@@ -15,12 +15,17 @@ export const getInstallments = async (req, res) => {
     }
 
     // Filter based on user role
-    if (req.user.role === 'admin') {
-      const sites = await Site.find({ adminId: req.user.id }).select('_id');
-      const siteIds = sites.map(s => s._id);
-      query.siteId = { $in: siteIds };
+    if (req.user.role === 'superadmin') {
+      // superadmin sees all
+    } else if (req.user.role === 'admin') {
+      const sites = await Site.find({ adminId: req.user._id }).select('_id');
+      const siteIds = sites.map(s => s._id.toString());
+      if (siteId && !siteIds.includes(siteId)) {
+        return res.status(403).json({ success: false, message: 'Not authorized for this site' });
+      }
+      if (!siteId) query.siteId = { $in: sites.map(s => s._id) };
     } else if (req.user.role === 'user') {
-      query.receivedBy = req.user.id;
+      query.receivedBy = req.user._id;
     }
 
     const installments = await Installment.find(query)
