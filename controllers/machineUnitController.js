@@ -69,7 +69,7 @@ export const createMachineUnit = async (req, res) => {
                 machineTypeId, serialNumber: sn, purchaseCost, quantity: 1,
                 purchaseDate: purchaseDate || Date.now(),
                 condition: condition || 'good',
-                isNew: req.body.isNew !== undefined ? req.body.isNew : true,
+                isNewMachine: req.body.isNewMachine !== undefined ? req.body.isNewMachine : true,
                 status: 'available', currentSiteId: null, amcDocument: amcDoc
             });
         }

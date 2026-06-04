@@ -24,7 +24,7 @@ const machineUnitSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['available', 'assigned', 'repair'],
+        enum: ['available', 'assigned', 'repair', 'missing', 'rejected'],
         default: 'available'
     },
     currentSiteId: {
@@ -64,7 +64,7 @@ const machineUnitSchema = new mongoose.Schema({
         ref: 'Operator',
         default: null
     },
-    isNew: {
+    isNewMachine: {
         type: Boolean,
         default: true
     }
