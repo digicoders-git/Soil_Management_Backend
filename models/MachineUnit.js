@@ -44,7 +44,7 @@ const machineUnitSchema = new mongoose.Schema({
     },
     condition: {
         type: String,
-        enum: ['good', 'damaged', 'maintenance'],
+        enum: ['good', 'damaged', 'maintenance', 'missing', 'rejected'],
         default: 'good'
     },
     lastMaintenanceDate: {
