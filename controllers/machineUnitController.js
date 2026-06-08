@@ -148,7 +148,7 @@ export const getUnitsByIncharge = async (req, res) => {
 export const updateMachineUnit = async (req, res) => {
     try {
         const { machineTypeId, serialNumber, purchaseCost, purchaseDate, condition, quantity } = req.body;
-        const validConditions = ['good', 'damaged', 'maintenance'];
+        const validConditions = ['good', 'damaged', 'maintenance', 'missing', 'rejected'];
         const updateData = {};
         if (machineTypeId) updateData.machineTypeId = machineTypeId;
         if (serialNumber) updateData.serialNumber = serialNumber;
