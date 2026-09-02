@@ -17,7 +17,7 @@ router.use(authMiddleware);
 
 router
   .route('/')
-  .get(checkPermission('expenses', 'view'), getExpenses)
+  .get(getExpenses)
   .post(checkPermission('expenses', 'add'), createExpense);
 
 router

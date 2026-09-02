@@ -40,7 +40,7 @@ export const getMachineUnits = async (req, res) => {
 // @access  Private (Admin only)
 export const createMachineUnit = async (req, res) => {
     try {
-        const { machineTypeId, serialNumber, purchaseCost, purchaseDate, condition, quantity } = req.body;
+        const { machineTypeId, serialNumber, purchaseCost, purchaseDate, condition, conditionRemarks, quantity } = req.body;
         const qty = parseInt(quantity) || 1;
         const amcDoc = req.file ? req.file.path.replace(/\\/g, '/') : null;
 
@@ -49,11 +49,17 @@ export const createMachineUnit = async (req, res) => {
             if (existing) {
                 return res.status(400).json({ success: false, message: 'Machine with this serial number already exists' });
             }
+            let initialStatus = 'available';
+            if (condition === 'damaged' || condition === 'maintenance') initialStatus = 'repair';
+            else if (condition === 'missing') initialStatus = 'missing';
+            else if (condition === 'rejected') initialStatus = 'rejected';
+
             const unit = await MachineUnit.create({
                 machineTypeId, serialNumber, purchaseCost, quantity: 1,
                 purchaseDate: purchaseDate || Date.now(),
                 condition: condition || 'good',
-                status: 'available', currentSiteId: null, amcDocument: amcDoc
+                conditionRemarks: conditionRemarks || null,
+                status: initialStatus, currentSiteId: null, amcDocument: amcDoc
             });
             await unit.populate('machineTypeId', 'name category');
             return res.status(201).json({ success: true, data: unit });
@@ -61,6 +67,11 @@ export const createMachineUnit = async (req, res) => {
 
         // Bulk create: auto-generate serial numbers as SN-<base>-1, SN-<base>-2 ...
         const units = [];
+        let initialStatus = 'available';
+        if (condition === 'damaged' || condition === 'maintenance') initialStatus = 'repair';
+        else if (condition === 'missing') initialStatus = 'missing';
+        else if (condition === 'rejected') initialStatus = 'rejected';
+
         for (let i = 1; i <= qty; i++) {
             const sn = `${serialNumber}-${i}`;
             const existing = await MachineUnit.findOne({ serialNumber: sn });
@@ -69,8 +80,9 @@ export const createMachineUnit = async (req, res) => {
                 machineTypeId, serialNumber: sn, purchaseCost, quantity: 1,
                 purchaseDate: purchaseDate || Date.now(),
                 condition: condition || 'good',
+                conditionRemarks: conditionRemarks || null,
                 isNewMachine: req.body.isNewMachine !== undefined ? req.body.isNewMachine : true,
-                status: 'available', currentSiteId: null, amcDocument: amcDoc
+                status: initialStatus, currentSiteId: null, amcDocument: amcDoc
             });
         }
         const created = await MachineUnit.insertMany(units);
@@ -147,7 +159,7 @@ export const getUnitsByIncharge = async (req, res) => {
 // @access  Private (Admin only)
 export const updateMachineUnit = async (req, res) => {
     try {
-        const { machineTypeId, serialNumber, purchaseCost, purchaseDate, condition, quantity } = req.body;
+        const { machineTypeId, serialNumber, purchaseCost, purchaseDate, condition, conditionRemarks, quantity } = req.body;
         const validConditions = ['good', 'damaged', 'maintenance', 'missing', 'rejected'];
         const updateData = {};
         if (machineTypeId) updateData.machineTypeId = machineTypeId;
@@ -155,17 +167,36 @@ export const updateMachineUnit = async (req, res) => {
         if (purchaseCost) updateData.purchaseCost = purchaseCost;
         if (purchaseDate) updateData.purchaseDate = purchaseDate;
         if (quantity) updateData.quantity = parseInt(quantity);
-        if (condition && validConditions.includes(condition)) updateData.condition = condition;
+        if (condition && validConditions.includes(condition)) {
+            updateData.condition = condition;
+            if (condition === 'damaged' || condition === 'maintenance') {
+                updateData.status = 'repair';
+            } else if (condition === 'missing') {
+                updateData.status = 'missing';
+            } else if (condition === 'rejected') {
+                updateData.status = 'rejected';
+            } else if (condition === 'good' && ['repair', 'missing', 'rejected'].includes(req.body.status)) {
+                // If they explicitly send status, let it override, otherwise leave it or set to available
+                // To avoid overriding assigned status when repairing/updating, only do this if needed
+            }
+        }
+        if (conditionRemarks !== undefined) updateData.conditionRemarks = conditionRemarks;
         if (req.file) updateData.amcDocument = req.file.path.replace(/\\/g, '/');
+
+        // Fetch first to safely determine if we should revert status to available
+        const currentUnit = await MachineUnit.findById(req.params.id);
+        if (!currentUnit) {
+            return res.status(404).json({ success: false, message: 'Machine unit not found' });
+        }
+
+        if (condition === 'good' && ['repair', 'missing', 'rejected'].includes(currentUnit.status)) {
+            updateData.status = 'available';
+        }
 
         const unit = await MachineUnit.findByIdAndUpdate(req.params.id, updateData, {
             new: true,
             runValidators: true
         });
-
-        if (!unit) {
-            return res.status(404).json({ success: false, message: 'Machine unit not found' });
-        }
 
         res.status(200).json({ success: true, data: unit });
     } catch (error) {

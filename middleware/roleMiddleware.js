@@ -38,6 +38,20 @@ export const checkPermission = (module, action) => {
       if (modulePerms && modulePerms[action]) {
         return next();
       }
+
+      // Default permissions for Site Incharge (user role)
+      // They are inherently restricted to their own data by the controllers
+      const defaultUserPerms = {
+        'expenses': ['view', 'add'],
+        'report': ['view', 'add', 'edit'],
+        'installment': ['view'],
+        'view_all_site': ['view'],
+        'all_stock': ['view']
+      };
+
+      if (defaultUserPerms[module] && defaultUserPerms[module].includes(action)) {
+        return next();
+      }
     }
 
     return res.status(403).json({

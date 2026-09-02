@@ -15,7 +15,7 @@ router.use(authMiddleware);
 
 router
     .route('/')
-    .get(checkPermission('all_stock', 'view'), getMachineUnits)
+    .get(getMachineUnits)
     .post(checkPermission('stock_units', 'add'), upload.single('amcDocument'), createMachineUnit);
 
 router.post('/purchase', checkPermission('stock_units', 'add'), purchaseMachineUnit);

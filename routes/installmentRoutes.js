@@ -17,7 +17,7 @@ router.use(authMiddleware);
 
 router
   .route('/')
-  .get(checkPermission('installment', 'view'), getInstallments)
+  .get(getInstallments)
   .post(checkPermission('installment', 'add'), createInstallment);
 
 router

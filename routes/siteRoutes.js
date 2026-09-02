@@ -18,12 +18,12 @@ router.use(authMiddleware);
 
 router
   .route('/')
-  .get(checkPermission('view_all_site', 'view'), getSites)
+  .get(getSites)
   .post(checkPermission('create_site', 'add'), createSite);
 
 router
   .route('/:id')
-  .get(checkPermission('view_all_site', 'view'), getSite)
+  .get(getSite)
   .put(checkPermission('view_all_site', 'edit'), updateSite)
   .delete(checkPermission('view_all_site', 'delete'), deleteSite);
 

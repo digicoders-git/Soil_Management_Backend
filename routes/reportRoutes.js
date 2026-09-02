@@ -16,7 +16,7 @@ router.use(authMiddleware);
 
 router
   .route('/')
-  .get(checkPermission('report', 'view'), getMachineReports)
+  .get(getMachineReports)
   .post(checkPermission('report', 'add'), createMachineReport);
 
 router
